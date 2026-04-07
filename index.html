@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>PROMPT GALLERY | The Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06060a; --surface: #0d0d14; --card: #10101a;
+            --card-border: rgba(255,255,255,0.06);
+            --accent: #a78bfa; --accent2: #f472b6; --accent3: #34d399;
+            --text: #f1f0ff; --muted: rgba(241,240,255,0.35);
+        }
+        .light-theme {
+            --bg: #f5f4ff; --surface: #ffffff; --card: #ffffff;
+            --card-border: rgba(0,0,0,0.07);
+            --accent: #7c3aed; --accent2: #db2777; --accent3: #059669;
+            --text: #1a1a2e; --muted: rgba(26,26,46,0.4);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            background-color: var(--bg); color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            transition: background 0.4s, color 0.4s;
+            margin: 0; overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body::after {
+            content: ''; position: fixed; inset: 0;
+            background-image: linear-gradient(rgba(167,139,250,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.025) 1px, transparent 1px);
+            background-size: 60px 60px; pointer-events: none; z-index: 0;
+        }
+
+        .glow-sphere { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+        .glow-1 { width: 500px; height: 500px; background: rgba(167,139,250,0.14); top: -150px; right: -100px; animation: floatG 12s ease-in-out infinite; }
+        .glow-2 { width: 300px; height: 300px; background: rgba(244,114,182,0.09); bottom: 20%; left: -80px; animation: floatG 18s ease-in-out infinite reverse; }
+        @keyframes floatG { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-28px)} }
+
+        /* â”€â”€ NAV â”€â”€ */
+        nav {
+            position: fixed; top: 0; width: 100%; height: 62px;
+            backdrop-filter: blur(24px) saturate(180%);
+            background: rgba(6,6,10,0.88); border-bottom: 1px solid var(--card-border);
+            z-index: 1000; display: flex; align-items: center; justify-content: space-between;
+            padding: 0 16px; transition: background 0.4s;
+        }
+        .light-theme nav { background: rgba(245,244,255,0.92); }
+        .nav-logo {
+            font-family: 'Syne', sans-serif; font-weight: 800;
+            font-size: clamp(0.8rem, 3.5vw, 1.05rem);
+            letter-spacing: 0.12em; text-transform: uppercase;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            white-space: nowrap;
+        }
+        .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .nav-contact-btn {
+            background: none; border: none; cursor: pointer;
+            font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 500;
+            color: var(--muted); transition: color 0.2s; padding: 6px 4px;
+            display: none;
+        }
+        @media (min-width: 480px) { .nav-contact-btn { display: block; } }
+        .nav-contact-btn:hover { color: var(--text); }
+        .nav-pill {
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.2);
+            padding: 7px 14px; border-radius: 100px; font-size: 0.7rem; font-weight: 500;
+            color: var(--text); cursor: pointer; transition: all 0.25s; white-space: nowrap;
+        }
+        .nav-pill:hover { background: rgba(167,139,250,0.2); border-color: var(--accent); }
+        .nav-icon-btn {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.25s; font-size: 0.78rem; color: var(--text); flex-shrink: 0;
+        }
+        .nav-icon-btn:hover { background: rgba(167,139,250,0.15); border-color: var(--accent); }
+
+        /* â”€â”€ PROFILE AVATAR + DROPDOWN â”€â”€ */
+        .profile-wrap { position: relative; }
+        .profile-avatar {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.85rem;
+            color: white; cursor: pointer; border: 2px solid rgba(167,139,250,0.35);
+            overflow: hidden; flex-shrink: 0; transition: all 0.25s;
+        }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar:hover { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,0.18); }
+        .profile-dropdown {
+            position: absolute; top: calc(100% + 10px); right: 0;
+            background: var(--card); border: 1px solid var(--card-border);
+            border-radius: 18px; padding: 6px; min-width: 210px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            display: none; flex-direction: column; z-index: 3000;
+            animation: dropIn 0.18s ease;
+        }
+        .profile-dropdown.open { display: flex; }
+        @keyframes dropIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+        .profile-header { padding: 12px 14px 10px; border-bottom: 1px solid var(--card-border); margin-bottom: 4px; }
+        .profile-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 2px; }
+        .profile-email { font-size: 0.68rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 10px;
+            padding: 9px 14px; border-radius: 10px; font-size: 0.78rem; font-weight: 500;
+            cursor: pointer; transition: background 0.2s; color: var(--text);
+            border: none; background: none; text-align: left; width: 100%;
+        }
+        .dropdown-item:hover { background: rgba(255,255,255,0.05); }
+        .dropdown-item i { width: 14px; text-align: center; color: var(--muted); font-size: 0.8rem; }
+        .dropdown-item.danger { color: #f87171; }
+        .dropdown-item.danger i { color: #f87171; }
+        .dropdown-item.danger:hover { background: rgba(248,113,113,0.08); }
+
+        /* â”€â”€ HERO â”€â”€ */
+        #hero-section { padding: 96px 16px 44px; max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(167,139,250,0.1); border: 1px solid rgba(167,139,250,0.25);
+            padding: 5px 14px; border-radius: 100px; font-size: 0.58rem; font-weight: 600;
+            letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.2rem;
+        }
+        .hero-eyebrow span { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(44px, 13vw, 130px);
+            font-weight: 800; line-height: 0.88; letter-spacing: -0.03em;
+            text-transform: uppercase; margin-bottom: 1.8rem;
+        }
+        .hero-title .accent-word {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hero-bottom { display: flex; flex-direction: column; gap: 20px; }
+        @media (min-width: 768px) { .hero-bottom { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+        .hero-sub { color: var(--muted); font-size: 0.9rem; line-height: 1.7; font-weight: 300; max-width: 360px; }
+        .search-wrap { position: relative; width: 100%; }
+        @media (min-width: 768px) { .search-wrap { width: 380px; } }
+        .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--accent); opacity: 0.5; font-size: 0.82rem; }
+        #search-input {
+            width: 100%; background: var(--surface); border: 1px solid var(--card-border);
+            padding: 14px 16px 14px 44px; border-radius: 14px;
+            font-family: 'DM Sans', sans-serif; font-size: 0.875rem; color: var(--text);
+            outline: none; transition: all 0.3s; -webkit-appearance: none;
+        }
+        #search-input::placeholder { color: var(--muted); }
+        #search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(167,139,250,0.1); }
+
+        /* â”€â”€ FILTER CHIPS â”€â”€ */
+        .filter-chips {
+            display: flex; flex-wrap: nowrap; gap: 8px; overflow-x: auto;
+            padding: 0 16px 28px; max-width: 1300px; margin: 0 auto;
+            position: relative; z-index: 1; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .filter-chips::-webkit-scrollbar { display: none; }
+        .chip {
+            padding: 7px 16px; border-radius: 100px;
+            background: var(--surface); border: 1px solid var(--card-border);
+            font-size: 0.7rem; font-weight: 600; cursor: pointer;
+            transition: all 0.22s; color: var(--muted); white-space: nowrap; flex-shrink: 0;
+        }
+        .chip:hover, .chip.active { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.1); }
+
+        /* â”€â”€ CARDS â”€â”€ */
+        #grid-container { position: relative; z-index: 1; }
+        .prompt-card {
+            background: var(--card); border-radius: 18px; border: 1px solid var(--card-border);
+            transition: all 0.38s cubic-bezier(0.23, 1, 0.32, 1);
+            height: 100%; display: flex; flex-direction: column; overflow: hidden;
+        }
+        .prompt-card:hover { transform: translateY(-5px); border-color: rgba(167,139,250,0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
+        .tool-badge {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(6,6,10,0.82); backdrop-filter: blur(10px);
+            border: 1px solid rgba(167,139,250,0.3); color: var(--accent);
+            padding: 4px 10px; border-radius: 100px;
+            font-size: 0.55rem; font-weight: 700; text-transform: uppercase;
+            z-index: 10; letter-spacing: 0.08em;
+        }
+        .card-img-wrap { position: relative; aspect-ratio: 4/5; overflow: hidden; cursor: pointer; }
+        .card-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 1s ease; }
+        .prompt-card:hover .card-img-wrap img { transform: scale(1.06); }
+        .card-hover-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(6,6,10,0.85) 0%, transparent 60%);
+            opacity: 0; transition: opacity 0.3s; display: flex; align-items: flex-end; padding: 12px;
+        }
+        .prompt-card:hover .card-hover-overlay { opacity: 1; }
+        @media (hover: none) { .card-hover-overlay { opacity: 1; } }
+        .card-hover-label {
+            font-family: 'Syne', sans-serif; font-size: 0.55rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.1em; color: #fff;
+            border: 1px solid rgba(255,255,255,0.2); padding: 5px 12px; border-radius: 100px;
+            backdrop-filter: blur(8px); background: rgba(255,255,255,0.08);
+        }
+        .card-body { padding: 14px 15px 16px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+        .card-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .card-footer-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+        .copy-btn {
+            background: linear-gradient(135deg, var(--accent), #7c3aed); color: white;
+            padding: 9px 16px; border-radius: 10px; font-family: 'Syne', sans-serif;
+            font-size: 0.62rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+            border: none; cursor: pointer; transition: all 0.22s;
+            box-shadow: 0 5px 14px rgba(124,58,237,0.28); min-height: 38px;
+        }
+        .copy-btn:active { transform: scale(0.93); }
+        .view-count { font-size: 0.62rem; font-weight: 600; color: var(--muted); display: flex; align-items: center; gap: 4px; }
+        .view-count i { color: var(--accent); }
+
+        /* â”€â”€ PAGINATION â”€â”€ */
+        #pagination-container { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 56px; position: relative; z-index: 1; }
+        .page-btn {
+            width: 44px; height: 44px; border-radius: 12px; background: var(--surface);
+            border: 1px solid var(--card-border); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.9rem; color: var(--text); transition: all 0.22s;
+        }
+        .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.1); }
+        .page-btn:disabled { opacity: 0.18; cursor: not-allowed; }
+        .page-info {
+            background: var(--surface); border: 1px solid var(--card-border);
+            padding: 10px 18px; border-radius: 12px; font-family: 'Syne', sans-serif;
+            font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+        }
+
+        /* â”€â”€ TOAST â”€â”€ */
+        #copy-toast {
+            position: fixed; bottom: 28px; left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: linear-gradient(135deg, var(--accent), #7c3aed); color: white;
+            padding: 12px 26px; border-radius: 100px;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.7rem;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            transition: 0.44s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9000; opacity: 0; box-shadow: 0 14px 28px rgba(124,58,237,0.38);
+            white-space: nowrap;
+        }
+        #copy-toast.active { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* â”€â”€ OVERLAYS â”€â”€ */
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.88); backdrop-filter: blur(18px);
+            z-index: 4000; display: none; align-items: flex-end; justify-content: center;
+            opacity: 0; transition: opacity 0.28s;
+        }
+        @media (min-width: 580px) { .overlay { align-items: center; } }
+        .overlay.show { display: flex; opacity: 1; }
+
+        .modal-card {
+            background: var(--card); border: 1px solid var(--card-border);
+            padding: 32px 22px 36px; border-radius: 26px 26px 0 0;
+            width: 100%; position: relative;
+            box-shadow: 0 -16px 50px rgba(0,0,0,0.5);
+            max-height: 90vh; overflow-y: auto;
+        }
+        @media (min-width: 580px) {
+            .modal-card { border-radius: 26px; max-width: 420px; padding: 40px 36px; box-shadow: 0 40px 80px rgba(0,0,0,0.55); }
+        }
+        .modal-drag { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--card-border); margin: 0 auto 24px; }
+        @media (min-width: 580px) { .modal-drag { display: none; } }
+        .modal-close {
+            position: absolute; top: 18px; right: 18px; width: 30px; height: 30px;
+            border-radius: 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.95rem; color: var(--muted); transition: all 0.2s;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+        .modal-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.7rem; letter-spacing: -0.02em; text-transform: uppercase; margin-bottom: 0.35rem; }
+        .modal-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 1.6rem; line-height: 1.6; }
+
+        /* â”€â”€ CONTACT BUTTONS â”€â”€ */
+        .contact-btn {
+            display: flex; align-items: center; justify-content: center; gap: 11px;
+            width: 100%; padding: 15px; border-radius: 14px;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.73rem;
+            letter-spacing: 0.08em; text-transform: uppercase;
+            text-decoration: none; transition: all 0.28s; cursor: pointer; border: none; min-height: 50px;
+        }
+        .contact-btn-insta { background: linear-gradient(135deg, #f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: white; margin-bottom: 12px; box-shadow: 0 8px 22px rgba(220,39,67,0.28); }
+        .contact-btn-insta:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(220,39,67,0.4); }
+        .contact-btn-email { background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); color: var(--text); }
+        .contact-btn-email:hover { border-color: var(--accent); background: rgba(167,139,250,0.08); }
+
+        /* â”€â”€ AUTH â”€â”€ */
+        .auth-input {
+            width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--card-border);
+            padding: 13px 15px; border-radius: 12px; margin-bottom: 10px;
+            color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+            outline: none; transition: all 0.22s; -webkit-appearance: none;
+        }
+        .auth-input:focus { border-color: var(--accent); background: rgba(167,139,250,0.05); }
+        .auth-input::placeholder { color: var(--muted); }
+        .auth-btn-google {
+            background: white; color: #1a1a1a; font-family: 'Syne', sans-serif; font-weight: 700;
+            font-size: 0.78rem; width: 100%; padding: 13px; border-radius: 13px; margin-bottom: 16px;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.22s; cursor: pointer; border: none; min-height: 48px;
+        }
+        .auth-btn-google:active { transform: scale(0.97); }
+        .auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+        .auth-divider div { flex: 1; height: 1px; background: var(--card-border); }
+        .auth-divider span { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.1em; color: var(--muted); }
+        .auth-submit {
+            width: 100%; background: linear-gradient(135deg, var(--accent), #7c3aed); color: white;
+            padding: 13px; border-radius: 13px; font-family: 'Syne', sans-serif; font-weight: 700;
+            font-size: 0.73rem; letter-spacing: 0.08em; text-transform: uppercase; border: none;
+            cursor: pointer; transition: all 0.22s; box-shadow: 0 8px 22px rgba(124,58,237,0.32); min-height: 48px;
+        }
+        .auth-submit:active { transform: scale(0.97); }
+
+        /* â”€â”€ LICENSING â”€â”€ */
+        .license-item { background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-left: 3px solid var(--accent); padding: 13px 15px; border-radius: 12px; font-size: 0.8rem; color: var(--muted); margin-bottom: 10px; line-height: 1.6; }
+        .agree-btn { width: 100%; background: linear-gradient(135deg, var(--accent), #7c3aed); color: white; padding: 14px; border-radius: 13px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.73rem; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer; margin-top: 18px; min-height: 48px; box-shadow: 0 8px 22px rgba(124,58,237,0.32); }
+
+        /* â”€â”€ FOOTER â”€â”€ */
+        footer { position: relative; z-index: 1; border-top: 1px solid var(--card-border); padding: 56px 16px 40px; margin-top: 40px; }
+        .footer-inner { max-width: 1300px; margin: 0 auto; }
+        .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 36px 20px; }
+        @media (min-width: 768px) { .footer-grid { grid-template-columns: 2fr 1fr 1fr 1.2fr; gap: 60px; } }
+        .footer-brand { grid-column: 1 / -1; }
+        @media (min-width: 768px) { .footer-brand { grid-column: auto; } }
+        .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.15rem; letter-spacing: 0.1em; text-transform: uppercase; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.7rem; }
+        .footer-desc { color: var(--muted); font-size: 0.8rem; line-height: 1.7; font-weight: 300; }
+        .footer-col-title { font-family: 'Syne', sans-serif; font-size: 0.56rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 1.1rem; opacity: 0.6; }
+        .footer-link { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 0.8rem; font-weight: 400; text-decoration: none; padding: 4px 0; transition: all 0.22s; cursor: pointer; border: none; background: none; text-align: left; width: 100%; }
+        .footer-link::before { content: ''; width: 3px; height: 3px; border-radius: 50%; background: var(--card-border); flex-shrink: 0; transition: all 0.22s; }
+        .footer-link:hover { color: var(--text); transform: translateX(5px); }
+        .footer-link:hover::before { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+        .footer-social-col { grid-column: 1 / -1; }
+        @media (min-width: 768px) { .footer-social-col { grid-column: auto; } }
+        .footer-social { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 0.78rem; text-decoration: none; padding: 10px 13px; border-radius: 12px; border: 1px solid var(--card-border); transition: all 0.28s; cursor: pointer; margin-bottom: 9px; font-weight: 500; }
+        .footer-social i { font-size: 0.92rem; }
+        .footer-social-insta:hover { background: linear-gradient(135deg, rgba(240,148,51,0.09), rgba(220,39,67,0.09), rgba(188,24,136,0.09)); border-color: #dc2743; color: #f06040; box-shadow: 0 0 18px rgba(220,39,67,0.16); transform: translateY(-2px); }
+        .footer-social-insta:hover i { background: linear-gradient(135deg, #f09433,#dc2743,#bc1888); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .footer-social-email:hover { background: rgba(167,139,250,0.07); border-color: var(--accent); color: var(--accent); box-shadow: 0 0 18px rgba(167,139,250,0.16); transform: translateY(-2px); }
+        .footer-bottom { margin-top: 44px; padding-top: 24px; border-top: 1px solid var(--card-border); display: flex; flex-direction: column; gap: 6px; }
+        @media (min-width: 580px) { .footer-bottom { flex-direction: row; justify-content: space-between; align-items: center; } }
+        .footer-copy { font-size: 0.66rem; color: var(--muted); opacity: 0.55; letter-spacing: 0.04em; }
+
+        /* â”€â”€ DETAIL VIEW â”€â”€ */
+        #detail-container { position: relative; z-index: 1; }
+        .back-btn { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); font-family: 'Syne', sans-serif; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; border: 1px solid var(--card-border); background: none; cursor: pointer; margin-bottom: 36px; padding: 9px 16px; border-radius: 100px; transition: all 0.22s; min-height: 40px; }
+        .back-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(167,139,250,0.07); }
+        .detail-grid { display: grid; grid-template-columns: 1fr; gap: 36px; align-items: start; }
+        @media (min-width: 860px) { .detail-grid { grid-template-columns: 1fr 1fr; gap: 64px; } }
+        .detail-tool-label { font-family: 'Syne', sans-serif; font-size: 0.6rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); display: block; margin-bottom: 0.7rem; }
+        .detail-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(26px, 5.5vw, 58px); line-height: 0.95; letter-spacing: -0.02em; text-transform: uppercase; }
+        .detail-prompt-box { background: rgba(167,139,250,0.05); border: 1px solid rgba(167,139,250,0.16); padding: 22px 22px 22px 26px; border-radius: 18px; font-style: italic; font-size: 0.96rem; line-height: 1.75; color: var(--text); font-weight: 300; position: relative; }
+        .detail-prompt-box::before { content: '"'; position: absolute; top: -8px; left: 14px; font-size: 3rem; color: var(--accent); opacity: 0.22; font-family: Georgia, serif; line-height: 1; }
+        .step-card { background: var(--surface); border: 1px solid var(--card-border); border-left: 3px solid var(--accent); padding: 13px 16px; border-radius: 12px; font-size: 0.84rem; margin-bottom: 9px; }
+        .copy-main-btn { flex: 1; background: linear-gradient(135deg, var(--accent), #7c3aed); color: white; padding: 17px; border-radius: 15px; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.87rem; letter-spacing: 0.04em; text-transform: uppercase; border: none; cursor: pointer; transition: all 0.22s; box-shadow: 0 10px 28px rgba(124,58,237,0.32); min-height: 54px; }
+        .copy-main-btn:active { transform: scale(0.96); }
+        .votes-box { background: var(--surface); border: 1px solid var(--card-border); padding: 14px 22px; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+        .votes-box .num { font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800; }
+        .votes-box .label { font-size: 0.48rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+
+        #main-content { padding: 0 16px 100px; max-width: 1300px; margin: 0 auto; position: relative; z-index: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="glow-sphere glow-1"></div>
+    <div class="glow-sphere glow-2"></div>
+
+    <!-- NAV -->
+    <nav>
+        <div class="nav-logo">PromptGallery</div>
+        <div class="nav-right">
+            <button onclick="toggleOverlay('contact-overlay')" class="nav-contact-btn">Contact</button>
+            <div id="auth-nav-container">
+                <button onclick="openLogin()" class="nav-pill">Sign In</button>
+            </div>
+            <button onclick="toggleTheme()" class="nav-icon-btn"><i id="theme-icon" class="fas fa-moon"></i></button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="hero-section">
+        <div class="hero-eyebrow"><span></span> AI Prompt Vault â€” 2026</div>
+        <h1 class="hero-title">The <span class="accent-word">Vault</span></h1>
+        <div class="hero-bottom">
+            <p class="hero-sub">Premium AI prompts for Midjourney, Sora, Runway & beyond â€” curated for next-gen creators.</p>
+            <div class="search-wrap">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Search prompts...">
+            </div>
+        </div>
+    </section>
+
+    <!-- FILTER CHIPS -->
+    <div class="filter-chips" id="filter-chips"></div>
+
+    <!-- MAIN -->
+    <div id="main-content">
+        <div id="grid-container" class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6"></div>
+        <div id="pagination-container"></div>
+        <div id="detail-container" class="hidden"></div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">Prompt Gallery</div>
+                    <p class="footer-desc">The bridge between human imagination and AI. Built for the modern creator.</p>
+                </div>
+                <div>
+                    <div class="footer-col-title">Vault</div>
+                    <div style="display:flex;flex-direction:column;">
+                        <button class="footer-link">Midjourney v6</button>
+                        <button class="footer-link">DALL-E 3</button>
+                        <button class="footer-link">Portraiture</button>
+                        <button class="footer-link">Anime Styles</button>
+                    </div>
+                </div>
+                <div>
+                    <div class="footer-col-title">Legal</div>
+                    <div style="display:flex;flex-direction:column;">
+                        <button onclick="toggleOverlay('licensing-overlay')" class="footer-link">Licensing</button>
+                        <button class="footer-link">Privacy</button>
+                        <button class="footer-link">API Terms</button>
+                        <button onclick="toggleOverlay('contact-overlay')" class="footer-link">Contact</button>
+                    </div>
+                </div>
+                <div class="footer-social-col">
+                    <div class="footer-col-title">Connect</div>
+                    <a href="https://www.instagram.com/altafgazi38?igsh=MzB0NW9lcmo1NnBm" target="_blank" class="footer-social footer-social-insta">
+                        <i class="fab fa-instagram"></i><span>@altafgazi38</span>
+                    </a>
+                    <a href="mailto:altafgazi584@gmail.com" class="footer-social footer-social-email">
+                        <i class="fas fa-envelope"></i><span>altafgazi584@gmail.com</span>
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <span class="footer-copy">Â© 2026 Altaf Gazi Â· All rights reserved</span>
+                <span class="footer-copy" style="opacity:0.35;">Stay updated with viral prompt trends</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- TOAST -->
+    <div id="copy-toast"><i class="fas fa-check" style="margin-right:7px;"></i>Prompt Copied!</div>
+
+    <!-- CONTACT OVERLAY -->
+    <div id="contact-overlay" class="overlay" onclick="if(event.target===this)toggleOverlay('contact-overlay')">
+        <div class="modal-card">
+            <div class="modal-drag"></div>
+            <button onclick="toggleOverlay('contact-overlay')" class="modal-close">&times;</button>
+            <div class="modal-title">Get In Touch</div>
+            <p class="modal-sub">Custom prompts, collabs, or just say hi.</p>
+            <a href="https://www.instagram.com/altafgazi38?igsh=MzB0NW9lcmo1NnBm" target="_blank" class="contact-btn contact-btn-insta">
+                <i class="fab fa-instagram" style="font-size:1.05rem;"></i>Follow on Instagram
+            </a>
+            <a href="mailto:altafgazi584@gmail.com" class="contact-btn contact-btn-email">
+                <i class="fas fa-envelope"></i>altafgazi584@gmail.com
+            </a>
+        </div>
+    </div>
+
+    <!-- LICENSING OVERLAY -->
+    <div id="licensing-overlay" class="overlay" onclick="if(event.target===this)toggleOverlay('licensing-overlay')">
+        <div class="modal-card">
+            <div class="modal-drag"></div>
+            <button onclick="toggleOverlay('licensing-overlay')" class="modal-close">&times;</button>
+            <div class="modal-title">Licensing</div>
+            <p class="modal-sub">Usage agreement for all prompts in this vault.</p>
+            <div class="license-item">1. <strong>Usage</strong> â€” All prompts are open-source for personal and commercial creative work.</div>
+            <div class="license-item">2. <strong>Redistribution</strong> â€” You may not repackage these prompts for resale.</div>
+            <div class="license-item">3. <strong>Liability</strong> â€” We are not responsible for AI outputs generated using these prompts.</div>
+            <button onclick="toggleOverlay('licensing-overlay')" class="agree-btn">I Agree & Continue</button>
+        </div>
+    </div>
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-overlay" class="overlay" onclick="if(event.target===this)closeLogin()">
+        <div class="modal-card">
+            <div class="modal-drag"></div>
+            <button onclick="closeLogin()" class="modal-close">&times;</button>
+            <div class="modal-title">Sign In</div>
+            <p class="modal-sub">Sign in to copy and save prompts from the vault.</p>
+            <button onclick="googleLogin()" class="auth-btn-google">
+                <i class="fab fa-google"></i>Continue with Google
+            </button>
+            <div class="auth-divider"><div></div><span>or</span><div></div></div>
+            <input id="email" type="email" placeholder="Email address" class="auth-input" autocomplete="email">
+            <input id="password" type="password" placeholder="Password" class="auth-input" autocomplete="current-password" style="margin-bottom:16px;">
+            <button onclick="emailLogin()" class="auth-submit">Sign In with Email</button>
+        </div>
+    </div>
+
+    <!-- PROFILE SHEET OVERLAY -->
+    <div id="profile-overlay" class="overlay" onclick="if(event.target===this)toggleOverlay('profile-overlay')">
+        <div class="modal-card">
+            <div class="modal-drag"></div>
+            <button onclick="toggleOverlay('profile-overlay')" class="modal-close">&times;</button>
+            <div id="profile-sheet-content"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+        // CONNECTION CHECK: Ensure this Config matches your Firebase Project settings exactly
+        const firebaseConfig = {
+            apiKey: "AIzaSyB66JvkkrO4t0ZyJhoCIm8bb6hKsWktWrg",
+            authDomain: "prompt-website-d3d42.firebaseapp.com",
+            projectId: "prompt-website-d3d42",
+            storageBucket: "prompt-website-d3d42.firebasestorage.app",
+            messagingSenderId: "1097706615899",
+            appId: "1:1097706615899:web:ac3ed9cd95e6fd6424bb7e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        let allData = [], currentPage = 1, searchQuery = "", activeFilter = "All", currentUser = null;
+        const postsPerPage = 9;
+        const urlParams = new URLSearchParams(window.location.search);
+        const postId = urlParams.get('id');
+
+        // â”€â”€ AUTH â”€â”€
+        onAuthStateChanged(auth, user => {
+            currentUser = user;
+            renderNav(user);
+        });
+
+        function renderNav(user) {
+            const c = document.getElementById('auth-nav-container');
+            if (user) {
+                const init = (user.displayName || user.email || 'U').charAt(0).toUpperCase();
+                const photo = user.photoURL;
+                c.innerHTML = `
+                <div class="profile-wrap" id="profile-wrap">
+                    <div class="profile-avatar" onclick="toggleProfileDrop(event)" title="${user.displayName || user.email}">
+                        ${photo ? `<img src="${photo}" alt="avatar">` : init}
+                    </div>
+                    <div class="profile-dropdown" id="profile-dropdown">
+                        <div class="profile-header">
+                            <div class="profile-name">${user.displayName || 'User'}</div>
+                            <div class="profile-email">${user.email}</div>
+                        </div>
+                        <button class="dropdown-item" onclick="openProfileSheet()">
+                            <i class="fas fa-user"></i>My Profile
+                        </button>
+                        <button class="dropdown-item danger" onclick="doLogout()">
+                            <i class="fas fa-sign-out-alt"></i>Sign Out
+                        </button>
+                    </div>
+                </div>`;
+            } else {
+                c.innerHTML = `<button onclick="openLogin()" class="nav-pill">Sign In</button>`;
+            }
+        }
+
+        // â”€â”€ DATA CONNECTION â”€â”€
+        // This listens to the "prompts" collection. 
+        // Ensure your collection in Firestore is named exactly "prompts" (all lowercase).
+        onSnapshot(collection(db, "prompts"), snap => {
+            allData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            initView();
+        });
+
+        function initView() {
+            if (postId) {
+                document.getElementById('hero-section').style.display = 'none';
+                document.getElementById('filter-chips').style.display = 'none';
+                document.getElementById('grid-container').style.display = 'none';
+                document.getElementById('pagination-container').style.display = 'none';
+                document.getElementById('detail-container').classList.remove('hidden');
+                renderDetailView(postId);
+            } else {
+                renderFilters();
+                renderGridView();
+            }
+        }
+
+        function renderFilters() {
+            const tools = ['All', ...new Set(allData.map(p => p.tool).filter(Boolean))];
+            document.getElementById('filter-chips').innerHTML = tools.map(t =>
+                `<button class="chip ${t === activeFilter ? 'active' : ''}" onclick="setFilter('${t}')">${t}</button>`
+            ).join('');
+        }
+
+        function renderGridView() {
+            const q = searchQuery.toLowerCase();
+            const filtered = allData.filter(p =>
+                ((p.title||"").toLowerCase().includes(q) || (p.tool||"").toLowerCase().includes(q)) &&
+                (activeFilter === 'All' || p.tool === activeFilter)
+            );
+            const totalPages = Math.ceil(filtered.length / postsPerPage) || 1;
+            if (currentPage > totalPages) currentPage = 1;
+            const paginated = filtered.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+            let html = '';
+            paginated.forEach(item => {
+                // Defensive check for prompt field to avoid errors
+                const promptContent = item.prompt || "";
+                const safe = promptContent.replace(/`/g, '\\`').replace(/\$/g, '\\$');
+                
+                html += `
+                <div class="prompt-card">
+                    <div class="card-img-wrap" onclick="openPost('${item.id}')">
+                        <div class="tool-badge">${item.tool || 'AI'}</div>
+                        <img src="${item.image || ''}" alt="${item.title || 'Prompt'}" loading="lazy">
+                        <div class="card-hover-overlay">
+                            <span class="card-hover-label"><i class="fas fa-expand-alt" style="margin-right:4px;"></i>View</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="card-title">${item.title || 'Untitled'}</div>
+                        <div class="card-footer-row">
+                            <button onclick="copyText(this,\`${safe}\`)" class="copy-btn">
+                                <i class="fas fa-copy" style="margin-right:4px;"></i>Copy
+                            </button>
+                            <span class="view-count"><i class="fas fa-eye"></i>${item.views||0}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            if (!html) html = `<div style="grid-column:1/-1;text-align:center;padding:56px 0;color:var(--muted);">
+                <i class="fas fa-search" style="font-size:1.8rem;margin-bottom:12px;display:block;opacity:0.2;"></i>
+                <p style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">No prompts found</p>
+                <p style="font-size:0.78rem;opacity:0.55;">Try a different search or filter</p></div>`;
+
+            document.getElementById('grid-container').innerHTML = html;
+            document.getElementById('pagination-container').innerHTML = `
+                <button class="page-btn" onclick="changePage(-1)" ${currentPage===1?'disabled':''}>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="page-info">${currentPage} / ${totalPages}</div>
+                <button class="page-btn" onclick="changePage(1)" ${currentPage===totalPages?'disabled':''}>
+                    <i class="fas fa-arrow-right"></i>
+                </button>`;
+        }
+
+        function renderDetailView(id) {
+            const item = allData.find(p => p.id === id);
+            if (!item) return;
+            const steps = item.steps ? item.steps.split('\\n') : ["Open your AI tool","Paste the prompt below","Generate and iterate"];
+            const promptContent = item.prompt || "";
+            const safe = promptContent.replace(/`/g,'\\`').replace(/\$/g,'\\$');
+            document.getElementById('detail-container').innerHTML = `
+            <div style="max-width:1100px;margin:0 auto;">
+                <button onclick="location.href=location.pathname" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>Back to Vault
+                </button>
+                <div class="detail-grid">
+                    <img src="${item.image}" style="width:100%;border-radius:18px;border:1px solid var(--card-border);box-shadow:0 24px 50px rgba(0,0,0,0.35);" alt="${item.title}">
+                    <div style="display:flex;flex-direction:column;gap:24px;">
+                        <div>
+                            <span class="detail-tool-label">${item.tool||'AI Tool'}</span>
+                            <h1 class="detail-title">${item.title}</h1>
+                            <p style="color:var(--muted);margin-top:12px;font-size:0.9rem;line-height:1.7;font-weight:300;">${item.description||''}</p>
+                        </div>
+                        <div class="detail-prompt-box">${item.prompt}</div>
+                        <div>
+                            <div style="font-family:'Syne',sans-serif;font-size:0.56rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);opacity:0.6;margin-bottom:9px;">How to Use</div>
+                            ${steps.map(s=>`<div class="step-card">${s}</div>`).join('')}
+                        </div>
+                        <div style="display:flex;gap:12px;align-items:center;">
+                            <button onclick="copyText(this,\`${safe}\`)" class="copy-main-btn">
+                                <i class="fas fa-copy" style="margin-right:7px;"></i>Copy Prompt
+                            </button>
+                            <div class="votes-box">
+                                <span class="num">${item.votes||0}</span>
+                                <span class="label">Votes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+            updateDoc(doc(db,"prompts",id),{views:increment(1)});
+        }
+
+        // â”€â”€ PROFILE SHEET â”€â”€
+        window.openProfileSheet = () => {
+            const u = currentUser; if(!u) return;
+            const init = (u.displayName||u.email||'U').charAt(0).toUpperCase();
+            const joined = u.metadata?.creationTime ? new Date(u.metadata.creationTime).toLocaleDateString('en-US',{month:'long',year:'numeric'}) : 'Recently';
+            const providerName = u.providerData[0]?.providerId === 'google.com' ? 'ðŸ”µ Google' : 'ðŸ“§ Email';
+            document.getElementById('profile-sheet-content').innerHTML = `
+                <div style="text-align:center;margin-bottom:24px;">
+                    <div style="width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;color:white;margin:0 auto 12px;overflow:hidden;border:3px solid rgba(167,139,250,0.3);">
+                        ${u.photoURL?`<img src="${u.photoURL}" style="width:100%;height:100%;object-fit:cover;">`:init}
+                    </div>
+                    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:3px;">${u.displayName||'User'}</div>
+                    <div style="font-size:0.72rem;color:var(--muted);">${u.email}</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03);border:1px solid var(--card-border);border-radius:14px;padding:4px 0;margin-bottom:18px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 16px;">
+                        <span style="font-size:0.75rem;color:var(--muted);">Member since</span>
+                        <span style="font-size:0.75rem;font-weight:600;">${joined}</span>
+                    </div>
+                    <div style="height:1px;background:var(--card-border);margin:0 16px;"></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 16px;">
+                        <span style="font-size:0.75rem;color:var(--muted);">Signed in with</span>
+                        <span style="font-size:0.75rem;font-weight:600;">${providerName}</span>
+                    </div>
+                </div>
+                <button onclick="doLogout();toggleOverlay('profile-overlay');" style="width:100%;background:rgba(248,113,113,0.09);border:1px solid rgba(248,113,113,0.2);color:#f87171;padding:13px;border-radius:13px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.72rem;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;min-height:46px;transition:all 0.22s;">
+                    <i class="fas fa-sign-out-alt" style="margin-right:8px;"></i>Sign Out
+                </button>`;
+            const dd = document.getElementById('profile-dropdown');
+            if(dd) dd.classList.remove('open');
+            toggleOverlay('profile-overlay');
+        };
+
+        // â”€â”€ GLOBAL WINDOW FUNCTIONS â”€â”€
+        window.setFilter = f => { activeFilter=f; currentPage=1; renderFilters(); renderGridView(); };
+
+        window.toggleProfileDrop = e => {
+            e.stopPropagation();
+            document.getElementById('profile-dropdown')?.classList.toggle('open');
+        };
+        document.addEventListener('click', () => document.getElementById('profile-dropdown')?.classList.remove('open'));
+
+        window.doLogout = async () => { await signOut(auth); };
+
+        window.openLogin = () => {
+            const el = document.getElementById("login-overlay");
+            el.style.display = "flex";
+            setTimeout(() => el.classList.add("show"), 10);
+        };
+        window.closeLogin = () => {
+            const el = document.getElementById("login-overlay");
+            el.classList.remove("show");
+            setTimeout(() => el.style.display = "none", 300);
+        };
+        window.googleLogin = async () => {
+            try { await signInWithPopup(auth, provider); closeLogin(); } catch(err) { alert(err.message); }
+        };
+        window.emailLogin = async () => {
+            try { await signInWithEmailAndPassword(auth, document.getElementById("email").value, document.getElementById("password").value); closeLogin(); }
+            catch(err) { alert(err.message); }
+        };
+
+        window.copyText = (btn, text) => {
+            if (!currentUser) { openLogin(); return; }
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById('copy-toast');
+                t.classList.add('active');
+                setTimeout(() => t.classList.remove('active'), 2500);
+            });
+        };
+
+        window.toggleOverlay = id => {
+            const el = document.getElementById(id);
+            const hidden = getComputedStyle(el).display === 'none';
+            if(hidden) { el.style.display='flex'; setTimeout(()=>el.classList.add('show'),10); }
+            else { el.classList.remove('show'); setTimeout(()=>el.style.display='none',300); }
+        };
+
+        window.toggleTheme = () => {
+            document.body.classList.toggle('light-theme');
+            document.getElementById('theme-icon').className = document.body.classList.contains('light-theme') ? 'fas fa-sun' : 'fas fa-moon';
+        };
+
+        window.openPost = id => { window.location.search = `?id=${id}`; };
+        window.changePage = dir => { currentPage += dir; renderGridView(); window.scrollTo({top:0,behavior:'smooth'}); };
+
+        document.getElementById('search-input').addEventListener('input', e => {
+            searchQuery = e.target.value; currentPage = 1; renderGridView();
+        });
+
+        setTimeout(() => { if (!currentUser) openLogin(); }, 120000);
+    </script>
+</body>
+</html>
